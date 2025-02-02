@@ -1,0 +1,1 @@
+# nextad.js
