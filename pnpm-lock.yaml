@@ -15,6 +15,28 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
 
+  packages/@nextad-nextjs:
+    dependencies:
+      '@nextad/registry':
+        specifier: workspace:*
+        version: link:../../registry
+      next:
+        specifier: ^14 || ^15
+        version: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      nextad:
+        specifier: workspace:*
+        version: link:../nextad
+      react:
+        specifier: ^18 || ^19 || ^19.0.0-rc
+        version: 19.0.0
+      react-dom:
+        specifier: ^18 || ^19 || ^19.0.0-rc
+        version: 19.0.0(react@19.0.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.0.8
+
   packages/nextad:
     dependencies:
       '@nextad/registry':
@@ -23,14 +45,17 @@ importers:
 
   playgrounds/nextjs:
     dependencies:
+      '@nextad/nextjs':
+        specifier: workspace:*
+        version: link:../../packages/@nextad-nextjs
       next:
         specifier: 15.1.6
         version: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
-        specifier: ^19.0.0
+        specifier: ^19
         version: 19.0.0
       react-dom:
-        specifier: ^19.0.0
+        specifier: ^19
         version: 19.0.0(react@19.0.0)
     devDependencies:
       '@eslint/eslintrc':
@@ -59,6 +84,16 @@ importers:
         version: 3.4.17
       typescript:
         specifier: ^5
+        version: 5.7.3
+
+  registry:
+    dependencies:
+      iab-openrtb:
+        specifier: ^1.0.0
+        version: 1.0.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
         version: 5.7.3
 
 packages:

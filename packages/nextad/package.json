@@ -10,6 +10,9 @@
   "license": "MIT",
   "bugs": "https://github.com/nextadjs/nextad.js.git",
   "homepage": "https://github.com/nextadjs/nextad.js.git",
+  "dependencies": {
+    "@nextad/registry": "github:nextadjs/registry#main"
+  },
   "repository": {
     "type": "git",   
     "url": "https://github.com/nextadjs/nextad.js.git",

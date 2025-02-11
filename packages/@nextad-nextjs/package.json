@@ -1,0 +1,37 @@
+{
+  "name": "@nextad/nextjs",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Kai Miyamoto",
+  "license": "MIT",
+  "bugs": "https://github.com/nextadjs/nextad.js.git",
+  "homepage": "https://github.com/nextadjs/nextad.js.git",
+  "dependencies": {
+    "@nextad/registry": "workspace:*",
+    "nextad": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^14 || ^15",
+    "react": "^18 || ^19 || ^19.0.0-rc",
+    "react-dom": "^18 || ^19 || ^19.0.0-rc"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/app/components/index.ts",
+      "types": "./src/app/components/index.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nextadjs/nextad.js.git",
+    "directory": "packages/@nextad-nextjs"
+  },
+  "devDependencies": {
+    "@types/react": "^19"
+  }
+}
