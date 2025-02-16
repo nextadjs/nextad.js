@@ -11,11 +11,22 @@
   "bugs": "https://github.com/nextadjs/nextad.js.git",
   "homepage": "https://github.com/nextadjs/nextad.js.git",
   "dependencies": {
-    "@nextad/registry": "github:nextadjs/registry#main"
+    "@nextad/openrtb": "^0.1.0",
+    "@nextad/registry": "workspace:*",
+    "@nextad/renderer": "^0.1.0",
+    "iab-adcom": "^1.0.5",
+    "iab-openrtb": "^1.0.0",
+    "uuid": "^11.0.5"
   },
   "repository": {
-    "type": "git",   
+    "type": "git",
     "url": "https://github.com/nextadjs/nextad.js.git",
     "directory": "packages/nextad"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
   }
 }
