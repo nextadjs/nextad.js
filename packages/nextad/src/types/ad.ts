@@ -1,20 +1,22 @@
-import type { Buyer } from "@nextad/registry";
+import type { Buyer, Runtime } from "@nextad/registry";
 import type { RequestDetails, V26BidRequest } from "@nextad/registry";
-import type { AdCOM } from "iab-adcom";
+import type { AdCOMAd } from "@nextad/registry";
 
 export type Ad = ClientAd | ServerAd;
 
 export interface ClientAd extends BaseAd {
-  type: "client";
+  runtime: "client";
 }
 
 export interface ServerAd extends BaseAd {
-  type: "server";
+  runtime: "server";
 }
 
-export interface BaseAd extends AdCOM.Media.Ad {
+export interface BaseAd {
+  runtime: Runtime;
   tagId: string;
-};
+  source: AdCOMAd;
+}
 
 export type TradingMethod = "OpenRTB";
 

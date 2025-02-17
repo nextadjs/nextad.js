@@ -1,15 +1,14 @@
-import type { Context } from "iab-adcom/context";
-import type { Placement } from "iab-adcom/placement";
 import type { AdSpotEvaluation } from "./ad-spot-evaluation";
+import type { AdCOMContext, AdCOMPlacement } from "@nextad/registry";
 
 export class AdSpot {
-  private readonly _placement: Placement;
-  private readonly _context: Context;
+  private readonly _placement: AdCOMPlacement;
+  private readonly _context: AdCOMContext;
   private _evaluation: AdSpotEvaluation;
 
   public constructor(
-    placement: Placement,
-    context: Context,
+    placement: AdCOMPlacement,
+    context: AdCOMContext,
     evaluation: AdSpotEvaluation
   ) {
     this._placement = placement;
@@ -17,11 +16,11 @@ export class AdSpot {
     this._evaluation = evaluation;
   }
 
-  public get context(): Context {
+  public get context(): AdCOMContext {
     return this._context;
   }
 
-  public get placement(): Placement {
+  public get placement(): AdCOMPlacement {
     return this._placement;
   }
 

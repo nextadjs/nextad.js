@@ -14,8 +14,6 @@
     "@nextad/openrtb": "^0.1.0",
     "@nextad/registry": "workspace:*",
     "@nextad/renderer": "^0.1.0",
-    "iab-adcom": "^1.0.5",
-    "iab-openrtb": "^1.0.0",
     "uuid": "^11.0.5"
   },
   "repository": {

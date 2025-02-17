@@ -1,15 +1,14 @@
 import { AdSpot } from "@/core/opportunity/ad-spot";
 import type { Config, Options } from "@/types";
-import type { Context } from "iab-adcom/context";
-import type { Placement } from "iab-adcom/placement";
+import type { AdCOMContext, AdCOMPlacement } from "@nextad/registry";
 import { AdSpotFactory } from "@/core/opportunity/ad-spot-factory";
 
 export class AdOpportunityController {
   constructor(private readonly config: Config) {}
 
   public async evaluate(
-    placement: Placement,
-    context: Context,
+    placement: AdCOMPlacement,
+    context: AdCOMContext,
     options?: Options
   ): Promise<AdSpot> {
     /*

@@ -102,9 +102,9 @@ export class OpenRTBStrategyForClient extends TradingStrategy {
     const ad = renderer.fromOpenRTB2Bid(bid);
 
     return {
-      type: "client",
+      runtime: "client",
       tagId: tradeableSpot.adSpot.placement.tagid,
-      ...ad,
+      source: ad,
     };
   }
 }

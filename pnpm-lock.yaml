@@ -48,12 +48,6 @@ importers:
       '@nextad/renderer':
         specifier: ^0.1.0
         version: 0.1.0
-      iab-adcom:
-        specifier: ^1.0.5
-        version: 1.0.5
-      iab-openrtb:
-        specifier: ^1.0.0
-        version: 1.0.0
       uuid:
         specifier: ^11.0.5
         version: 11.0.5

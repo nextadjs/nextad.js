@@ -1,13 +1,12 @@
 import { AdSpot } from "./ad-spot";
-import type { Placement } from "iab-adcom/placement";
-import type { Context } from "iab-adcom/context";
+import type { AdCOMPlacement, AdCOMContext } from "@nextad/registry";
 import { BidRequestBuilder } from "@nextad/openrtb/builder/v26";
 import type { Options } from "@/types";
 
 export class AdSpotFactory {
   public create(
-    placement: Placement,
-    context: Context,
+    placement: AdCOMPlacement,
+    context: AdCOMContext,
     options?: Options
   ): AdSpot {
     // TODO* id, impを評価段階で生成するようにする
