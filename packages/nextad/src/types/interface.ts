@@ -12,7 +12,7 @@ export interface IAdOpportunityController {
 }
 
 export interface IAdExchangeController {
-  execute(adSpot: AdSpot[], adExchangeStrategy: AdExchangeStrategy): Promise<Ad[]>;
+  execute(adSpots: AdSpot[], adExchangeStrategy: AdExchangeStrategy): Promise<Ad[]>;
 }
 
 export interface IAdDeliveryController {

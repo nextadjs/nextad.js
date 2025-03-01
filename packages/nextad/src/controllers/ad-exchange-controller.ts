@@ -1,4 +1,4 @@
-import type { Ad } from "@/core/ad";
+import type { Ad } from "@/core/ads/ad";
 import type { AdExchangeStrategy } from "@/core/ad-exchange-strategies";
 import type { AdSpot } from "@/core/ad-spot";
 import type { IConfig, IAdExchangeController } from "@/types";
