@@ -4,11 +4,13 @@ import type {
   IAdExchangeController,
   IAdOpportunityController,
   IAdTradeController,
+  IConfig,
 } from "@/types";
 import type { AdCOMPlacement } from "@nextad/registry";
 
 export class AdTradeController implements IAdTradeController {
   public constructor(
+    private config: IConfig,
     private adOpportunityController: IAdOpportunityController,
     private adExchangeController: IAdExchangeController,
     private adExchangeStrategyFactory: AdExchangeStrategyFactory

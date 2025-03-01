@@ -16,7 +16,7 @@ import {
 } from "@nextad/registry";
 
 export class Config implements IConfig {
-  private constructor(private userConfig: UserConfig) {}
+  public constructor(private userConfig: UserConfig) {}
 
   // 実装
   public async getSignals(
