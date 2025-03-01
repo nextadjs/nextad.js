@@ -40,12 +40,11 @@ export class AdOpportunityController implements IAdOpportunityController {
     for (let compliance of compliances) {
       const complianceContextHandler = compliance.handleContext();
       if (context.channel === "site") {
-        // これ渡すときにrfdc使ってディープコピーしたのを渡してあげる
         context.source.site = await complianceContextHandler.validateSite(
           deepCopy(context.source.site)
         );
       }
-    }
+    }  
 
     const buyers = await this.config.getBuyers(getRuntime(), context);
 

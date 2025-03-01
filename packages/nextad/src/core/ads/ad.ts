@@ -1,8 +1,8 @@
-import type { AdCOMAd, Runtime } from "@nextad/registry";
-import type { AdSpot } from "./ad-spot";
+import type { AdCOMAd, TradeMethod } from "@nextad/registry";
+import type { AdSpot } from "../ad-spot";
 
 export abstract class Ad {
-  public abstract readonly runtime: Runtime;
+  public abstract readonly tradeMethod: TradeMethod;
   protected readonly adSpot: AdSpot;
   protected readonly creative: AdCOMAd;
 

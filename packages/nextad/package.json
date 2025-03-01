@@ -14,8 +14,9 @@
     "@nextad/openrtb": "^0.1.0",
     "@nextad/registry": "workspace:*",
     "@nextad/renderer": "^0.1.0",
+    "@openrtb/converter": "^0.1.2",
     "rfdc": "^1.4.1",
-    "uuid": "^11.0.5"
+    "uuid": "^11.1.0"
   },
   "repository": {
     "type": "git",
