@@ -35,6 +35,7 @@ export class OpenRTBv26Strategy extends AdExchangeStrategy {
         for (let adSpot of adSpots) {
           // ここでadcomからbidに変換するのはライブラリ通したい bid <-> adcom
           // マルチフォーマットに対応していないバイヤーは一つ一つ分ける
+          // 対応してるメディアタイプもここで判定
           const impId = uuid();
           adSpotImpMap.set(impId, adSpot.id);
           bidRequest.addImp({

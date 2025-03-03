@@ -2,6 +2,7 @@ import type { AdExchangeStrategyFactory } from "@/core/ad-exchange-strategies/ad
 import type { Ad } from "@/core/ads/ad";
 import type {
   IAdExchangeController,
+  IAdMatchingController,
   IAdOpportunityController,
   IAdTradeController,
   IConfig,
@@ -13,7 +14,8 @@ export class AdTradeController implements IAdTradeController {
     private config: IConfig,
     private adOpportunityController: IAdOpportunityController,
     private adExchangeController: IAdExchangeController,
-    private adExchangeStrategyFactory: AdExchangeStrategyFactory
+    private adMatchingController: IAdMatchingController,
+    private adExchangeStrategyFactory: AdExchangeStrategyFactory,
   ) {}
 
   public async execute(placements: AdCOMPlacement[]): Promise<Ad> {
@@ -31,6 +33,6 @@ export class AdTradeController implements IAdTradeController {
 
     // ここで返すAdのマッチングを行う
     // 今は一個目を選択
-    return ads[0]!;
+    return await this.adMatchingController.match(ads);
   }
 }

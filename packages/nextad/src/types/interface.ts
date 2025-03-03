@@ -12,7 +12,14 @@ export interface IAdOpportunityController {
 }
 
 export interface IAdExchangeController {
-  execute(adSpots: AdSpot[], adExchangeStrategy: AdExchangeStrategy): Promise<Ad[]>;
+  execute(
+    adSpots: AdSpot[],
+    adExchangeStrategy: AdExchangeStrategy
+  ): Promise<Ad[]>;
+}
+
+export interface IAdMatchingController {
+  match(ads: Ad[]): Promise<Ad>;
 }
 
 export interface IAdDeliveryController {
@@ -23,4 +30,8 @@ export interface IAdDeliveryController {
   // それともこっちでインターフェースパッケージに操作を任せるか
   // まぁ設定を柱としたserveがいいだろうな
   // ただrefreshとかもある程度柔軟性は必要だと思う。そういうのをどうするかはやっぱり問題
+}
+
+export interface IAdRenderingController {
+  render(targetElement: HTMLDivElement, ad: Ad): Promise<void>;
 }
