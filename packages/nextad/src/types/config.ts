@@ -1,13 +1,10 @@
 import type {
   Buyer,
-  BuyerUserConfig,
   ClientSignal,
   Compliance,
-  ComplianceUserConfig,
   Context,
   Runtime,
   ServerSignal,
-  SignalUserConfig,
 } from "@nextad/registry";
 
 export interface IConfig {
@@ -18,10 +15,7 @@ export interface IConfig {
     context: Context
   ): Promise<ClientSignal<unknown, any>[] | ServerSignal<unknown, any>[]>;
 
-  getBuyers(
-    runtime: Runtime,
-    context: Context
-  ): Promise<Buyer<any>[]>;
+  getBuyers(runtime: Runtime, context: Context): Promise<Buyer<any>[]>;
 
   getCompliances(
     runtime: Runtime,
@@ -29,20 +23,4 @@ export interface IConfig {
   ): Promise<Compliance<any>[]>;
 
   getContext(): Context;
-}
-
-export interface UserConfig {
-  context: Context;
-  data?: {
-    providers?: Record<string, SignalUserConfig<any>>;
-  };
-  optimization?: {
-    providers?: Record<string, SignalUserConfig<any>>;
-  };
-  safety?: {
-    providers?: Record<string, ComplianceUserConfig<any>>;
-  };
-  monetization?: {
-    providers?: Record<string, BuyerUserConfig<any>>;
-  };
 }

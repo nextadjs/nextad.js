@@ -1,5 +1,6 @@
 export * from "./interface";
 export * from "./config";
+export * from './user-config';
 
 export interface Price {
   value: number;
