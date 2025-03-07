@@ -19,7 +19,7 @@ export class AdTradeController implements IAdTradeController {
   ) {}
 
   public async execute(placements: AdCOMPlacement[]): Promise<Ad> {
-    const adSpots = await this.adOpportunityController.evaluate(placements);
+    const adSpots = await this.adOpportunityController.evaluate(placements);   
 
     // ここで取引選択、取引戦略の最適化処理を行うべき
 
@@ -30,9 +30,7 @@ export class AdTradeController implements IAdTradeController {
       adSpots,
       adExchangeStrategy
     );
-
-    // ここで返すAdのマッチングを行う
-    // 今は一個目を選択
+    
     return await this.adMatchingController.match(ads);
   }
 }
