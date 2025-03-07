@@ -5,7 +5,7 @@ import type { AdCOMPlacement } from "@nextad/registry";
 import type { AdSlot } from "@/core/ad-slot";
 
 export interface IAdTradeController {
-  execute(placements: AdCOMPlacement[]): Promise<Ad>;
+  execute(placements: AdCOMPlacement[]): Promise<Map<AdSpot, Ad>>;
 }
 
 export interface IAdOpportunityController {
@@ -16,15 +16,15 @@ export interface IAdExchangeController {
   execute(
     adSpots: AdSpot[],
     adExchangeStrategy: AdExchangeStrategy
-  ): Promise<Ad[]>;
+  ): Promise<Map<AdSpot, Ad[]>>;
 }
 
 export interface IAdMatchingController {
-  match(ads: Ad[]): Promise<Ad>;
+  match(adsMap: Map<AdSpot, Ad[]>): Promise<Map<AdSpot, Ad>>;
 }
 
 export interface IAdDeliveryController {
-  serve(targetElement: HTMLDivElement, ad: Ad): Promise<void>;
+  serve(targetElement: HTMLDivElement, adSpot: AdSpot, ad: Ad): Promise<void>;
 }
 
 export interface IAdRenderingController {

@@ -18,7 +18,6 @@ import {
 export class Config implements IConfig {
   public constructor(private userConfig: UserConfig) {}
 
-  // 実装
   public async getSignals(
     runtime: Runtime,
     context: Context

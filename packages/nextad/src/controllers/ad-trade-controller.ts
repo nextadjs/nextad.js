@@ -1,4 +1,5 @@
 import type { AdExchangeStrategyFactory } from "@/core/ad-exchange-strategies/ad-exchange-strategy-factory";
+import type { AdSpot } from "@/core/ad-spot";
 import type { Ad } from "@/core/ads/ad";
 import type {
   IAdExchangeController,
@@ -18,7 +19,7 @@ export class AdTradeController implements IAdTradeController {
     private adExchangeStrategyFactory: AdExchangeStrategyFactory,
   ) {}
 
-  public async execute(placements: AdCOMPlacement[]): Promise<Ad> {
+  public async execute(placements: AdCOMPlacement[]): Promise<Map<AdSpot, Ad>> {
     const adSpots = await this.adOpportunityController.evaluate(placements);   
 
     // ここで取引選択、取引戦略の最適化処理を行うべき

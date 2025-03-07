@@ -1,9 +1,19 @@
+import type { AdSlot } from "@/core/ad-slot";
+import { AdSpot } from "@/core/ad-spot";
 import type { Ad } from "@/core/ads/ad";
-import type { IAdMatchingController } from "@/types";
+import type { IAdMatchingController, IConfig } from "@/types";
 
 export class AdMatchingController implements IAdMatchingController {
-  public async match(ads: Ad[]): Promise<Ad> {
-    // マッチング処理
-    return ads[0]!;
+  constructor(private readonly config: IConfig) {}
+
+  public async match(adsMap: Map<AdSpot, Ad[]>): Promise<Map<AdSpot, Ad>> {
+    const adMap = new Map<AdSpot, Ad>();
+
+    adsMap.forEach((ads, adSpot) => {
+      // マッチング処理
+      adMap.set(adSpot, ads[0]!);
+    });
+
+    return adMap;
   }
 }

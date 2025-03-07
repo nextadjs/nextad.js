@@ -7,5 +7,5 @@ export abstract class AdExchangeStrategy {
 
   public abstract execute(
     adSpots: AdSpot[],
-  ): Promise<Ad[]>;
+  ): Promise<Map<AdSpot, Ad[]>>;
 }

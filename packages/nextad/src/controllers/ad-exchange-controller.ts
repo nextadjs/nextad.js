@@ -9,8 +9,8 @@ export class AdExchangeController implements IAdExchangeController {
   public async execute(
     adSpots: AdSpot[],
     adExchangeStrategy: AdExchangeStrategy
-  ): Promise<Ad[]> {
-    const ads = await adExchangeStrategy.execute(adSpots);
-    return ads;
+  ): Promise<Map<AdSpot, Ad[]>> {
+    const adsMap = await adExchangeStrategy.execute(adSpots);
+    return adsMap;
   }
 }
