@@ -9,7 +9,7 @@ import { uuid } from "@/utils";
 import { V26BidToAdConverter } from "@openrtb/converter";
 import { OpenRTBv26Ad } from "../ads/openrtb-v26-ad";
 
-export class OpenRTBv26AdStrategy extends AdExchangeStrategy {
+export class OpenRTBv26Strategy extends AdExchangeStrategy {
   private readonly REQUEST_TIMEOUT_MS = 10000;
 
   public async execute(adSpots: AdSpot[]): Promise<Map<AdSpot, Ad[]>> {
