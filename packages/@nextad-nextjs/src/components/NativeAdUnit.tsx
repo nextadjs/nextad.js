@@ -8,57 +8,95 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
+import ReactDOMServer from 'react-dom/server';
 
-const NativeAdContext = React.createContext<NativeAdContextType | null>(null);
-
+// コンテキストの型定義
 type Asset = Record<string, number>;
 
 type NativeAdContextType = {
   registerAsset: (type: string) => number;
+  isLoading: boolean;
 };
 
-interface NativeAdUnitProps {
-  children: React.ReactNode;
-}
+// コンテキスト作成
+const NativeAdContext = React.createContext<NativeAdContextType | null>(null);
 
-export const NativeAdUnit = ({
-  children,
-  className,
-}: {
+// ========== NativeAdUnit コンポーネント ==========
+interface NativeAdUnitProps {
+  id: string;
   children: React.ReactNode;
   className?: string;
-}) => {
-  const componentsRef = useRef<Record<string, React.ReactNode>>({});
+  loading?: React.ReactNode;
+}
+
+const NativeAdUnitComponent = ({
+  id,
+  children,
+  className,
+  loading,
+}: NativeAdUnitProps) => {
   const assets = useRef<Asset>({});
   const idCounter = useRef(1);
   const [isReady, setIsReady] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [adContainer, setAdContainer] = useState<HTMLDivElement | null>(null);
+  const childrenRef = useRef(children);
 
+  // 子コンポーネントの更新を反映
+  useEffect(() => {
+    childrenRef.current = children;
+  }, [children]);
+
+  // アセット登録関数をメモ化
   const registerAsset = useCallback((type: string) => {
-    console.log(type);
     if (!assets.current[type]) {
       assets.current[type] = idCounter.current++;
     }
-
     return assets.current[type];
   }, []);
 
-  useEffect(() => {
-    // すべてのコンポーネントが登録された後に入札処理を行う
-    if (isReady || !containerRef.current) return;
+  // コンテキスト値をメモ化
+  const contextValue = useMemo(
+    () => ({
+      registerAsset,
+      isLoading,
+    }),
+    [registerAsset, isLoading]
+  );
 
-    setIsReady(true);
+  // 子コンポーネントをHTMLとして取得する関数 - 以前の方式に近い実装
+  const captureChildrenAsHtml = useCallback(() => {
+    // このコンポーネントのDOMにある非表示の子要素コンテナを探す
+    const hiddenContainer = document.getElementById(`${id}-hidden-children`);
+    
+    if (!hiddenContainer) {
+      console.warn('Hidden children container not found');
+      return '';
+    }
+    
+    // hiddenContainerの子要素を取得して処理
+    const htmlString = Array.from(hiddenContainer.children)
+      .map(child => processNode(child as Element, assets.current))
+      .join('');
+    
+    return htmlString;
+  }, [id]);
 
-    console.log("assets:", assets);
+  // 広告読み込み処理
+  const loadAd = useCallback(async () => {
+    if (!adContainer) return;
 
-    const htmlString = Array.from(containerRef.current.children)
-      .map((child) => processNode(child, assets.current))
-      .join("");
-
-    const loadAd = async () => {
+    try {
+      setIsLoading(true);
+      
+      // 子コンポーネントからHTMLを生成
+      const htmlString = captureChildrenAsHtml();
+      console.log("Generated HTML:", htmlString);
+      
       const config = await loadConfigForClient();
 
       config.context = {
@@ -107,86 +145,193 @@ export const NativeAdUnit = ({
         },
       ]);
 
-      const target = document.getElementById("ad-unit") as HTMLDivElement;
-      if (target && adMap.size > 0) {
+      console.log("adMap:", adMap);
+
+      if (adContainer && adMap.size > 0) {
         adMap.forEach((ad, adSpot) => {
-          nextad.displayAd(target, adSpot, ad, {
+          console.log(adContainer);
+          nextad.displayAd(adContainer, adSpot, ad, {
             adTemplate: htmlString,
           });
         });
       }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error loading ad:", error);
+      setIsLoading(false);
+    }
+  }, [adContainer, captureChildrenAsHtml]);
+
+  // マウント時に広告コンテナを作成
+  useEffect(() => {
+    const container = document.createElement('div');
+    container.id = id;
+    container.className = clsx(className);
+    
+    document.getElementById(`${id}-placeholder`)?.insertAdjacentElement('afterend', container);
+    setAdContainer(container);
+    
+    return () => {
+      // クリーンアップ
+      container.remove();
     };
+  }, [id, className]);
 
-    loadAd();
-
-    console.log("Generated HTML:", htmlString);
-
-    //console.log("Generated HTML:", template);
-  }, [containerRef]);
+  // アセットが登録された後に広告を読み込む
+  useEffect(() => {
+    // コンポーネントがレンダリングされ、コンテナが準備できたら広告を読み込む
+    if (adContainer && !isReady) {
+      // DOMが確実に描画された後に処理を実行するため、requestAnimationFrameを使用
+      // 最初のrAFはレンダリング前、2つ目のrAFはレンダリング後に実行される
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // さらに少し待機して子コンポーネントのDOMが完全に描画されるのを確実にする
+          setTimeout(() => {
+            setIsReady(true);
+            loadAd();
+          }, 50);
+        });
+      });
+      
+      return () => {
+        // クリーンアップはsetTimeoutをキャンセルする必要がある場合に実装
+      };
+    }
+  }, [adContainer, isReady, loadAd]);
 
   return (
-    <NativeAdContext.Provider value={{ registerAsset }}>
-      <div
-        className={clsx("border rounded p-4", className)}
-        id="native-ad"
-        ref={containerRef}
-      >
+    <NativeAdContext.Provider value={contextValue}>
+      {isLoading && loading}
+      <div id={`${id}-placeholder`}></div>
+      {/* 子コンポーネントは描画されるが、見えない場所に */}
+      <div id={`${id}-hidden-children`} style={{ 
+        position: 'absolute', 
+        visibility: 'hidden',
+        pointerEvents: 'none',
+        width: '0',
+        height: '0',
+        overflow: 'hidden',
+        opacity: 0
+      }}>
         {children}
       </div>
     </NativeAdContext.Provider>
   );
 };
 
-export const NativeAdTitle: React.FC<{
-  children: React.ReactNode;
+// メモ化したNativeAdUnitをエクスポート
+export const NativeAdUnit = React.memo(NativeAdUnitComponent);
+
+// ========== NativeAdTitle コンポーネント ==========
+interface NativeAdComponentProps {
+  children?: React.ReactNode;
   className?: string;
-}> = ({ children, className }) => {
+  loading?: React.ReactNode;
+}
+
+const NativeAdTitleComponent: React.FC<NativeAdComponentProps> = ({
+  children,
+  className,
+  loading,
+}) => {
   const context = useContext(NativeAdContext);
 
-  const id = context?.registerAsset("title");
-  console.log("title id:", id);
+  if (!context) {
+    console.warn("NativeAdTitle must be used within a NativeAdUnit");
+    return null;
+  }
+
+  const id = context.registerAsset("title");
+  const { isLoading } = context;
 
   return (
     <div
       className={clsx("nextadjs-native-title", className)}
-      data-asset-type={"title"}
+      data-asset-type="title"
     >
-      {children}
+      {isLoading && loading ? loading : children}
     </div>
   );
 };
 
-export const NativeAdDescription: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = ({ children, className }) => {
+// メモ化したNativeAdTitleをエクスポート
+export const NativeAdTitle = React.memo(NativeAdTitleComponent);
+
+// ========== NativeAdDescription コンポーネント ==========
+const NativeAdDescriptionComponent: React.FC<NativeAdComponentProps> = ({
+  children,
+  className,
+  loading,
+}) => {
   const context = useContext(NativeAdContext);
 
-  useEffect(() => {
-    context?.registerAsset("description");
-  }, []);
+  if (!context) {
+    console.warn("NativeAdDescription must be used within a NativeAdUnit");
+    return null;
+  }
+
+  const id = context.registerAsset("description");
+  const { isLoading } = context;
 
   return (
     <div
       className={clsx("nextadjs-native-description", className)}
-      data-asset-type={"description"}
+      data-asset-type="description"
     >
-      {children}
+      {isLoading && loading ? loading : children}
     </div>
   );
 };
 
-const Image: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+// メモ化したNativeAdDescriptionをエクスポート
+export const NativeAdDescription = React.memo(NativeAdDescriptionComponent);
+
+// ========== NativeAdImage コンポーネント ==========
+interface NativeAdImageProps extends NativeAdComponentProps {
+  src: string;
+  alt: string;
+  width?: number | string;
+  height?: number | string;
+}
+
+const NativeAdImageComponent: React.FC<NativeAdImageProps> = ({
+  src,
+  alt,
+  className,
+  loading,
+  width,
+  height,
+}) => {
   const context = useContext(NativeAdContext);
-  const element = <img src={src} alt={alt} />;
 
-  useEffect(() => {
-    context?.registerAsset("image");
-  }, []);
+  if (!context) {
+    console.warn("NativeAdImage must be used within a NativeAdUnit");
+    return null;
+  }
 
-  return <div className="mb-2">{element}</div>;
+  const id = context.registerAsset("image");
+  const { isLoading } = context;
+
+  return (
+    <div
+      className={clsx("nextadjs-native-image", className)}
+      data-asset-type="image"
+    >
+      {isLoading && loading ? (
+        loading
+      ) : (
+        <img src={src} alt={alt} width={width} height={height} />
+      )}
+    </div>
+  );
 };
 
+// メモ化したNativeAdImageをエクスポート
+export const NativeAdImage = React.memo(NativeAdImageComponent);
+
+// ========== ユーティリティ関数 ==========
+// HTML処理関数
 const processNode = (node: Element, assets: Asset): string => {
   let html = "";
   const assetType = node.getAttribute("data-asset-type");
@@ -196,13 +341,11 @@ const processNode = (node: Element, assets: Asset): string => {
 
   // 属性を追加
   Array.from(node.attributes).forEach((attr) => {
-    html += ` ${attr.name}="${attr.value}"`;
+    if (attr.name !== "data-reactroot") { // React固有の属性は除外
+      html += ` ${attr.name}="${attr.value}"`;
+    }
   });
   html += ">";
-
-  console.log(html);
-
-  console.log(assetType);
 
   if (assetType && assets[assetType]) {
     // アセットIDを挿入
@@ -229,26 +372,40 @@ const processNode = (node: Element, assets: Asset): string => {
   return html;
 };
 
-const NestedAdComponent = ({ children }: { children: React.ReactNode }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const assets = useRef<Asset>({
-    type1: 1,
-    type2: 2,
-    // 必要なアセットタイプとIDのマッピング
-  });
+// NestedAdComponentはこの新しいアプローチでは不要になる場合が多いが、
+// 互換性のために残しておく
+const NestedAdComponent = React.memo(
+  ({ children }: { children: React.ReactNode }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const assets = useRef<Asset>({
+      type1: 1,
+      type2: 2,
+      // 必要なアセットタイプとIDのマッピング
+    });
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+    useEffect(() => {
+      if (!containerRef.current) return;
 
-    // HTML構造を文字列として取得
-    const htmlString = Array.from(containerRef.current.children)
-      .map((child) => processNode(child, assets.current))
-      .join("");
+      // TemplateContainerを使用してHTMLを生成
+      const TemplateContainer = () => <>{children}</>;
+      const htmlString = ReactDOMServer.renderToString(<TemplateContainer />);
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlString;
+      
+      const processedHtml = Array.from(tempDiv.children)
+        .map(child => processNode(child as Element, assets.current))
+        .join('');
 
-    console.log("Generated HTML:", htmlString);
+      console.log("Generated HTML:", processedHtml);
+      // ここでprocessedHtmlを必要に応じて利用
+    }, [children]);
 
-    // ここでhtmlStringを必要に応じて利用
-  }, [children]);
+    return <div ref={containerRef} style={{ display: 'none' }}>{children}</div>;
+  }
+);
 
-  return <div ref={containerRef}>{children}</div>;
-};
+// NestedAdComponentにdisplayName設定
+NestedAdComponent.displayName = "NestedAdComponent";
+
+export { NestedAdComponent };
