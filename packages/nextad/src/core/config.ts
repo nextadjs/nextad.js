@@ -113,10 +113,37 @@ export class Config implements IConfig {
       })
     );
 
-    return getSuccessfulResults<Buyer<any>>(
-      buyerSettledResult
-    );
+    return getSuccessfulResults<Buyer<any>>(buyerSettledResult);
   }
+
+  public async loadMeasurements(
+    runtime: Runtime,
+    context: Context
+  ): Promise<void> {
+    const measurementConfig = {
+      ...this.userConfig?.analytics?.providers,
+    };
+
+    await Promise.allSettled(
+      Object.keys(measurementConfig).map(async (name) => {
+        if (runtime === "client") {
+          return await buyerRegistry.loadForClient(
+            name,
+            measurementConfig[name],
+            context
+          );
+        } else if (runtime === "server") {
+          return await buyerRegistry.loadForServer(
+            name,
+            measurementConfig[name],
+            context
+          );
+        }
+
+        throw new Error("Invalid runtime specified");
+      })
+    );
+  } 
 
   public getContext(): Context {
     return this.userConfig.context;

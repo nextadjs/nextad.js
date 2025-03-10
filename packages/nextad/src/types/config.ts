@@ -22,5 +22,7 @@ export interface IConfig {
     context: Context
   ): Promise<Compliance<any>[]>;
 
+  loadMeasurements(runtime: Runtime, context: Context): Promise<void>;
+
   getContext(): Context;
 }

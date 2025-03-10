@@ -13,6 +13,10 @@
   "homepage": "https://github.com/nextadjs/nextad.js.git",
   "dependencies": {
     "@nextad/registry": "workspace:*",
+    "clsx": "^2.1.1",
+    "cosmiconfig": "^9.0.0",
+    "cosmiconfig-typescript-loader": "^6.1.0",
+    "iab-adcom": "^1.0.5",
     "nextad": "workspace:*"
   },
   "peerDependencies": {
@@ -22,8 +26,12 @@
   },
   "exports": {
     ".": {
-      "import": "./src/app/components/index.ts",
-      "types": "./src/app/components/index.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./components": {
+      "import": "./src/components/index.ts",
+      "types": "./src/components/index.ts"
     }
   },
   "repository": {

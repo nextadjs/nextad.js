@@ -9,6 +9,8 @@ export class AdMatchingController implements IAdMatchingController {
   public async match(adsMap: Map<AdSpot, Ad[]>): Promise<Map<AdSpot, Ad>> {
     const adMap = new Map<AdSpot, Ad>();
 
+    console.log('adMap', adMap);
+
     adsMap.forEach((ads, adSpot) => {
       // マッチング処理
       adMap.set(adSpot, ads[0]!);

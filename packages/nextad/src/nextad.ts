@@ -2,7 +2,7 @@ import type { AdCOMPlacement, Context } from "@nextad/registry";
 import type { Ad } from "./core/ads/ad";
 import { AdTradeController } from "./controllers/ad-trade-controller";
 import { Config } from "./core/config";
-import type { IConfig, UserConfig } from "./types";
+import type { AdDeliveryOptions, IConfig, UserConfig } from "./types";
 import { AdOpportunityController } from "./controllers/ad-opportunity-controller";
 import { AdExchangeController } from "./controllers/ad-exchange-controller";
 import { AdExchangeStrategyFactory } from "./core/ad-exchange-strategies/ad-exchange-strategy-factory";
@@ -18,7 +18,7 @@ export class NextAd {
     this.config = new Config(userConfig);
   }
 
-  public async prepareAd(placements: AdCOMPlacement[]): Promise<Map<AdSpot, Ad>> {
+  public async prepare(placements: AdCOMPlacement[]): Promise<Map<AdSpot, Ad>> {
     const adOpportunityController = new AdOpportunityController(this.config);
     const adExchangeController = new AdExchangeController(this.config);
     const adMatchingController = new AdMatchingController(this.config);
@@ -36,14 +36,14 @@ export class NextAd {
     return await adTradeController.execute(placements);
   }
 
-  public async displayAd(targetElement: HTMLDivElement, adSpot: AdSpot, ad: Ad) {
+  public async displayAd(targetElement: HTMLDivElement, adSpot: AdSpot, ad: Ad, options?: AdDeliveryOptions) {
     // これ、adSlotの命名をtargetElementにしつつ、この中でAdSlot化してdeliveryに渡す機構ありかも
     // TODO
     const adRenderingController = new AdRenderingController();
     const adDeliveryController = new AdDeliveryController(
       this.config,
-      adRenderingController
+      adRenderingController,
     );
-    return adDeliveryController.serve(targetElement, adSpot, ad);
+    return adDeliveryController.serve(targetElement, adSpot, ad, options);
   }
 }

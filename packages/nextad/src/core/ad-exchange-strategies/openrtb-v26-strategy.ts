@@ -1,12 +1,22 @@
-import type { Buyer, V26Bid, V26BidResponse } from "@nextad/registry";
+import type {
+  Buyer,
+  ContextWithSite,
+  V26Bid,
+  V26BidRequest,
+  V26BidResponse,
+  V26Imp,
+} from "@nextad/registry";
 import type { AdSpot } from "../ad-spot";
 import type { Ad } from "../ads/ad";
 import { AdExchangeStrategy } from "./ad-exchange-strategy";
 import { allSettledWithTimeout, getSuccessfulResults } from "@/utils/promise";
 import { BidRequestBuilder } from "@nextad/openrtb/builder/v26";
 import { bidRequester } from "@nextad/openrtb/bid-requester";
-import { uuid } from "@/utils";
-import { V26BidToAdConverter } from "@openrtb/converter";
+import { deepCopy, uuid } from "@/utils";
+import {
+  V26BidToAdConverter,
+  V12NativeRequestToNativeFormatConverter,
+} from "@openrtb/converter";
 import { OpenRTBv26Ad } from "../ads/openrtb-v26-ad";
 
 export class OpenRTBv26Strategy extends AdExchangeStrategy {
@@ -35,6 +45,8 @@ export class OpenRTBv26Strategy extends AdExchangeStrategy {
       adSpotImpMap,
       adSpots
     );
+
+    console.log(commonBidResponses);
 
     // AdSpotごとにAdをグループ化
     const adSpotToAdsMap = new Map<AdSpot, Ad[]>();
@@ -93,12 +105,17 @@ export class OpenRTBv26Strategy extends AdExchangeStrategy {
     adSpots: AdSpot[],
     adSpotImpMap: Map<string, string>
   ): Promise<V26BidResponse[]> {
+    console.log(adSpots);
     const settledBidResponses = await allSettledWithTimeout(
       commonBuyers.map(async (buyer) => {
         return this.requestBidsFromBuyer(buyer, adSpots, adSpotImpMap);
       }),
       this.REQUEST_TIMEOUT_MS
     );
+
+    console.log(settledBidResponses);
+
+    // TODO: エラーハンドリング
 
     return getSuccessfulResults(settledBidResponses);
   }
@@ -118,22 +135,69 @@ export class OpenRTBv26Strategy extends AdExchangeStrategy {
   ): Promise<V26BidResponse> {
     const buyerContextHandler = buyer.handleOpenRTBv26();
     const requestConfig = buyerContextHandler.configureRequest();
-    const bidRequest = new BidRequestBuilder();
+    let bidRequest = new BidRequestBuilder();
+
+    // 一時的にサイトのみ
+    const siteAdSpots = adSpots.filter(adSpot => {
+      return adSpot.context.channel === 'site';
+    });
+
+    const context = siteAdSpots[0].context as ContextWithSite;
+
+    bidRequest.withSite({
+      domain: context.source.site.domain,
+    });
 
     // 各adSpotをimpに追加
-    for (const adSpot of adSpots) {
+    for (const adSpot of siteAdSpots) {
       const impId = uuid();
       adSpotImpMap.set(impId, adSpot.id);
 
-      bidRequest.addImp({
-        id: impId,
-        // 必要に応じてadSpotから追加のimp情報を設定
-      });
+      bidRequest.addImp(
+        this.generateImp(
+          impId,
+          deepCopy(bidRequest.build() as V26BidRequest),
+          adSpot,
+          buyer
+        )
+      );
     }
 
-    return bidRequester.requestV26(requestConfig.url, bidRequest.build(), {
+    let buildedBidRequest = bidRequest.build();
+    buildedBidRequest = buyerContextHandler.decorateBidRequest(
+      deepCopy(buildedBidRequest)
+    ) as V26BidRequest;
+
+    return bidRequester.requestV26(requestConfig.url, buildedBidRequest, {
       cache: requestConfig.cache,
     });
+  }
+
+  private generateImp(
+    impId: string,
+    bidRequest: V26BidRequest,
+    adSpot: AdSpot,
+    buyer: Buyer<any>
+  ): V26Imp {
+    let imp: V26Imp = {
+      id: impId,
+    };
+
+    // TODO: ここでマルチフォーマットの処理とか考慮とかしたい
+
+    if (adSpot.placement.display?.nativefmt?.asset) {
+      const converter = new V12NativeRequestToNativeFormatConverter();
+      imp.native = {
+        request: JSON.stringify(
+          converter.from(adSpot.placement.display.nativefmt)
+        ),
+      };
+    }
+
+    const handler = buyer.handleOpenRTBv26();
+    imp = handler.decorateImpression(deepCopy(imp), bidRequest);
+
+    return imp;
   }
 
   private convertBidResponsesToAds(

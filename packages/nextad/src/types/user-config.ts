@@ -2,10 +2,12 @@ import type {
   BuyerUserConfig,
   ComplianceUserConfig,
   Context,
+  MeasurementUserConfig,
   SignalUserConfig,
 } from "@nextad/registry";
 
 export interface UserConfig {
+  mode: 'development' | 'production';
   context: Context;
   data?: {
     providers?: Record<string, SignalUserConfig<any>>;
@@ -18,5 +20,8 @@ export interface UserConfig {
   };
   monetization?: {
     providers?: Record<string, BuyerUserConfig<any>>;
+  };
+  analytics?: {
+    providers?: Record<string, MeasurementUserConfig<any>>;
   };
 }
