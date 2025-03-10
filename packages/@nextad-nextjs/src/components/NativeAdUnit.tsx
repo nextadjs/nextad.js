@@ -12,7 +12,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import ReactDOMServer from 'react-dom/server';
 
 // コンテキストの型定義
 type Asset = Record<string, number>;
@@ -371,41 +370,3 @@ const processNode = (node: Element, assets: Asset): string => {
 
   return html;
 };
-
-// NestedAdComponentはこの新しいアプローチでは不要になる場合が多いが、
-// 互換性のために残しておく
-const NestedAdComponent = React.memo(
-  ({ children }: { children: React.ReactNode }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const assets = useRef<Asset>({
-      type1: 1,
-      type2: 2,
-      // 必要なアセットタイプとIDのマッピング
-    });
-
-    useEffect(() => {
-      if (!containerRef.current) return;
-
-      // TemplateContainerを使用してHTMLを生成
-      const TemplateContainer = () => <>{children}</>;
-      const htmlString = ReactDOMServer.renderToString(<TemplateContainer />);
-      
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlString;
-      
-      const processedHtml = Array.from(tempDiv.children)
-        .map(child => processNode(child as Element, assets.current))
-        .join('');
-
-      console.log("Generated HTML:", processedHtml);
-      // ここでprocessedHtmlを必要に応じて利用
-    }, [children]);
-
-    return <div ref={containerRef} style={{ display: 'none' }}>{children}</div>;
-  }
-);
-
-// NestedAdComponentにdisplayName設定
-NestedAdComponent.displayName = "NestedAdComponent";
-
-export { NestedAdComponent };
