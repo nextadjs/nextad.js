@@ -29,9 +29,15 @@ importers:
       '@ai-sdk/react':
         specifier: ^1.1.20
         version: 1.1.20(react@19.0.0)(zod@3.24.2)
+      '@nextad/nextjs':
+        specifier: workspace:*
+        version: link:../../packages/@nextad-nextjs
       ai:
         specifier: ^4.1.51
         version: 4.1.51(react@19.0.0)(zod@3.24.2)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       lucide-react:
         specifier: ^0.477.0
         version: 0.477.0(react@19.0.0)

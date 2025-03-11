@@ -146,6 +146,7 @@ export class OpenRTBv26Strategy extends AdExchangeStrategy {
 
     bidRequest.withSite({
       domain: context.source.site.domain,
+      kwarray: context.source.site.kwarray
     });
 
     // 各adSpotをimpに追加

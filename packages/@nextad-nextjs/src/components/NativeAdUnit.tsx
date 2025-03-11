@@ -30,6 +30,7 @@ interface NativeAdUnitProps {
   children: React.ReactNode;
   className?: string;
   loading?: React.ReactNode;
+  topics?: string[];
 }
 
 const NativeAdUnitComponent = ({
@@ -37,6 +38,7 @@ const NativeAdUnitComponent = ({
   children,
   className,
   loading,
+  topics,
 }: NativeAdUnitProps) => {
   const assets = useRef<Asset>({});
   const idCounter = useRef(1);
@@ -71,17 +73,17 @@ const NativeAdUnitComponent = ({
   const captureChildrenAsHtml = useCallback(() => {
     // このコンポーネントのDOMにある非表示の子要素コンテナを探す
     const hiddenContainer = document.getElementById(`${id}-hidden-children`);
-    
+
     if (!hiddenContainer) {
-      console.warn('Hidden children container not found');
-      return '';
+      console.warn("Hidden children container not found");
+      return "";
     }
-    
+
     // hiddenContainerの子要素を取得して処理
     const htmlString = Array.from(hiddenContainer.children)
-      .map(child => processNode(child as Element, assets.current))
-      .join('');
-    
+      .map((child) => processNode(child as Element, assets.current))
+      .join("");
+
     return htmlString;
   }, [id]);
 
@@ -91,11 +93,11 @@ const NativeAdUnitComponent = ({
 
     try {
       setIsLoading(true);
-      
+
       // 子コンポーネントからHTMLを生成
       const htmlString = captureChildrenAsHtml();
       console.log("Generated HTML:", htmlString);
-      
+
       const config = await loadConfigForClient();
 
       config.context = {
@@ -103,6 +105,7 @@ const NativeAdUnitComponent = ({
         source: {
           site: {
             domain: window.location.hostname,
+            kwarray: topics
           },
         },
       };
@@ -164,13 +167,15 @@ const NativeAdUnitComponent = ({
 
   // マウント時に広告コンテナを作成
   useEffect(() => {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     container.id = id;
     container.className = clsx(className);
-    
-    document.getElementById(`${id}-placeholder`)?.insertAdjacentElement('afterend', container);
+
+    document
+      .getElementById(`${id}-placeholder`)
+      ?.insertAdjacentElement("afterend", container);
     setAdContainer(container);
-    
+
     return () => {
       // クリーンアップ
       container.remove();
@@ -192,7 +197,7 @@ const NativeAdUnitComponent = ({
           }, 50);
         });
       });
-      
+
       return () => {
         // クリーンアップはsetTimeoutをキャンセルする必要がある場合に実装
       };
@@ -204,15 +209,18 @@ const NativeAdUnitComponent = ({
       {isLoading && loading}
       <div id={`${id}-placeholder`}></div>
       {/* 子コンポーネントは描画されるが、見えない場所に */}
-      <div id={`${id}-hidden-children`} style={{ 
-        position: 'absolute', 
-        visibility: 'hidden',
-        pointerEvents: 'none',
-        width: '0',
-        height: '0',
-        overflow: 'hidden',
-        opacity: 0
-      }}>
+      <div
+        id={`${id}-hidden-children`}
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          pointerEvents: "none",
+          width: "0",
+          height: "0",
+          overflow: "hidden",
+          opacity: 0,
+        }}
+      >
         {children}
       </div>
     </NativeAdContext.Provider>
@@ -286,48 +294,32 @@ const NativeAdDescriptionComponent: React.FC<NativeAdComponentProps> = ({
 // メモ化したNativeAdDescriptionをエクスポート
 export const NativeAdDescription = React.memo(NativeAdDescriptionComponent);
 
-// ========== NativeAdImage コンポーネント ==========
-interface NativeAdImageProps extends NativeAdComponentProps {
-  src: string;
-  alt: string;
-  width?: number | string;
-  height?: number | string;
-}
-
-const NativeAdImageComponent: React.FC<NativeAdImageProps> = ({
-  src,
-  alt,
+const NativeAdLinkComponent: React.FC<NativeAdComponentProps> = ({
+  children,
   className,
   loading,
-  width,
-  height,
 }) => {
   const context = useContext(NativeAdContext);
 
   if (!context) {
-    console.warn("NativeAdImage must be used within a NativeAdUnit");
+    console.warn("NativeAdLink must be used within a NativeAdUnit");
     return null;
   }
 
-  const id = context.registerAsset("image");
   const { isLoading } = context;
 
   return (
     <div
-      className={clsx("nextadjs-native-image", className)}
-      data-asset-type="image"
+      className={clsx("nextadjs-native-link", className)}
+      data-asset-type="link"
     >
-      {isLoading && loading ? (
-        loading
-      ) : (
-        <img src={src} alt={alt} width={width} height={height} />
-      )}
+      {isLoading && loading ? loading : children}
     </div>
   );
 };
 
-// メモ化したNativeAdImageをエクスポート
-export const NativeAdImage = React.memo(NativeAdImageComponent);
+// メモ化したNativeAdLinkをエクスポート
+export const NativeAdLink = React.memo(NativeAdLinkComponent);
 
 // ========== ユーティリティ関数 ==========
 // HTML処理関数
@@ -340,15 +332,31 @@ const processNode = (node: Element, assets: Asset): string => {
 
   // 属性を追加
   Array.from(node.attributes).forEach((attr) => {
-    if (attr.name !== "data-reactroot") { // React固有の属性は除外
+    if (attr.name !== "data-reactroot") {
+      // React固有の属性は除外
       html += ` ${attr.name}="${attr.value}"`;
     }
   });
   html += ">";
 
   if (assetType && assets[assetType]) {
-    // アセットIDを挿入
     html += `##hb_native_asset_id_${assets[assetType]}##`;
+  } else if (assetType === "link") {
+    // アセットIDを挿入
+    let children = "";
+    Array.from(node.children).forEach((child) => {
+      children += processNode(child as Element, assets);
+    });
+
+    if (
+      node.childNodes.length === 0 ||
+      (node.childNodes.length === 1 &&
+        node.firstChild?.nodeType === Node.TEXT_NODE)
+    ) {
+      children += node.textContent || "";
+    }
+
+    html += `<a target="_blank" href="##hb_native_linkurl##">${children}</a>`;
   } else {
     // 子要素を再帰的に処理
     Array.from(node.children).forEach((child) => {
